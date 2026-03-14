@@ -10,6 +10,7 @@ import { api } from "@/lib/api";
 
 const ManageWithdrawals = () => {
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [processingId, setProcessingId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const load = async () => {
@@ -31,9 +32,21 @@ const ManageWithdrawals = () => {
     }
   };
 
-  const processWithdrawal = async (_id: string) => {
-    toast({ title: "Automatic System", description: "Withdrawals are processed daily by automation." });
-    await load();
+  const processWithdrawal = async (id: string) => {
+    setProcessingId(id);
+    try {
+      await api(`/api/withdrawals/admin/${id}/approve/`, { method: "POST" });
+      toast({ title: "Withdrawal Approved", description: "The withdrawal has been moved to paid withdrawals." });
+      await load();
+    } catch (error: any) {
+      toast({
+        title: "Approval Failed",
+        description: error?.message || "This withdrawal could not be approved.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingId(null);
+    }
   };
 
   const pendingWithdrawals = withdrawals.filter(w => w.status === "pending");
@@ -68,13 +81,19 @@ const ManageWithdrawals = () => {
                 <TableCell className="font-bold text-primary whitespace-nowrap">PKR {w.netAmount.toLocaleString()}</TableCell>
                 <TableCell className="whitespace-nowrap">
                   <Badge className={w.status === "processed" ? "bg-primary/10 text-primary border-primary/20" : "bg-secondary/10 text-secondary border-secondary/20"}>
-                    {w.status}
+                    {w.status === "processed" ? "paid" : "pending"}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   {w.status === "pending" && (
-                    <Button size="sm" variant="outline" className="text-primary" onClick={() => processWithdrawal(w.id)}>
-                      <Check className="w-3 h-3 mr-1" /> Process
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-primary"
+                      onClick={() => processWithdrawal(w.id)}
+                      disabled={processingId === w.id}
+                    >
+                      <Check className="w-3 h-3 mr-1" /> {processingId === w.id ? "Approving..." : "Approve"}
                     </Button>
                   )}
                 </TableCell>
