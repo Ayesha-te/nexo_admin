@@ -34,7 +34,7 @@ const userMenuItems = [
   { title: "My Pins", url: "/my-pins", icon: Key },
   { title: "Add New User", url: "/add-user", icon: UserPlus },
   { title: "My Tree", url: "/my-tree", icon: GitBranch },
-  { title: "Whitdraw History", url: "/withdraw-history", icon: Wallet },
+  { title: "Withdraw History", url: "/withdraw-history", icon: Wallet },
   { title: "Change Password 🔑", url: "/change-password", icon: Lock },
   { title: "Profile Setting", url: "/profile", icon: Settings },
 ];
