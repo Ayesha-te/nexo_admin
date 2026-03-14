@@ -1,4 +1,4 @@
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+export const API_URL = import.meta.env.VITE_API_URL || "https://silly-reeva-sagiyqwgey-6587eae4.koyeb.app";
 
 async function refreshAccessToken() {
   const refresh = localStorage.getItem("refreshToken");
