@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 191 70% 96%;
+    --foreground: 207 45% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 45% 18%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 45% 18%;
+
+    --primary: 162 80% 49%;
+    --primary-foreground: 150 30% 12%;
+
+    --secondary: 202 66% 59%;
+    --secondary-foreground: 150 30% 12%;
+
+    --muted: 191 38% 91%;
+    --muted-foreground: 203 18% 41%;
+
+    --accent: 162 80% 49%;
+    --accent-foreground: 205 46% 16%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 191 32% 84%;
+    --input: 191 32% 84%;
+    --ring: 162 80% 49%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 160 70% 26%;
+    --sidebar-foreground: 189 45% 94%;
+    --sidebar-primary: 162 80% 49%;
+    --sidebar-primary-foreground: 150 30% 12%;
+    --sidebar-accent: 166 55% 34%;
+    --sidebar-accent-foreground: 189 45% 94%;
+    --sidebar-border: 166 52% 30%;
+    --sidebar-ring: 162 80% 49%;
+
+    --nexo-green: 162 80% 49%;
+    --nexo-green-light: 162 70% 62%;
+    --nexo-gold: 162 80% 49%;
+    --nexo-gold-light: 162 70% 62%;
+    --nexo-dark: 210 45% 18%;
+  }
+
+  .dark {
+    --background: 211 52% 11%;
+    --foreground: 189 45% 92%;
+
+    --card: 210 46% 14%;
+    --card-foreground: 189 45% 92%;
+
+    --popover: 210 46% 14%;
+    --popover-foreground: 189 45% 92%;
+
+    --primary: 162 80% 49%;
+    --primary-foreground: 211 52% 11%;
+
+    --secondary: 202 66% 59%;
+    --secondary-foreground: 150 30% 12%;
+
+    --muted: 208 31% 21%;
+    --muted-foreground: 192 23% 66%;
+
+    --accent: 162 80% 49%;
+    --accent-foreground: 205 46% 16%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 208 31% 24%;
+    --input: 208 31% 24%;
+    --ring: 162 80% 49%;
+
+    --sidebar-background: 162 62% 20%;
+    --sidebar-foreground: 189 45% 92%;
+    --sidebar-primary: 162 80% 49%;
+    --sidebar-primary-foreground: 150 30% 12%;
+    --sidebar-accent: 164 42% 26%;
+    --sidebar-accent-foreground: 189 45% 92%;
+    --sidebar-border: 164 42% 28%;
+    --sidebar-ring: 162 80% 49%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+@layer utilities {
+  .nexo-gradient {
+    background: linear-gradient(135deg, #15E6A5 0%, #15E6A5 65%, #53AEDD 100%);
+  }
+  .nexo-gradient-text {
+    background: linear-gradient(135deg, #15E6A5 0%, #53AEDD 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .nexo-card-glow {
+    box-shadow: 0 0 20px -5px hsl(var(--nexo-green) / 0.18), 0 0 40px -10px hsl(var(--nexo-green-light) / 0.16);
+  }
+  .nexo-gold-glow {
+    box-shadow: 0 0 20px -5px hsl(var(--nexo-gold) / 0.3);
+  }
+}

@@ -5,8 +5,6 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{ts,tsx}",
-    "../frontend/src/components/**/*.{ts,tsx}",
-    "../frontend/src/pages/admin/**/*.{ts,tsx}",
   ],
   prefix: "",
   theme: {

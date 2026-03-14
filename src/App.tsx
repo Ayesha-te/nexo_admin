@@ -5,12 +5,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import LoginPage from "./pages/LoginPage";
-import AdminDashboard from "../../frontend/src/pages/admin/AdminDashboard";
-import ManagePinRequests from "../../frontend/src/pages/admin/ManagePinRequests";
-import ManageUsers from "../../frontend/src/pages/admin/ManageUsers";
-import ManageWithdrawals from "../../frontend/src/pages/admin/ManageWithdrawals";
-import ManageComplaintsAndFeedback from "../../frontend/src/pages/admin/ManageComplaintsAndFeedback";
-import NotFound from "../../frontend/src/pages/NotFound";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import ManagePinRequests from "@/pages/admin/ManagePinRequests";
+import ManageUsers from "@/pages/admin/ManageUsers";
+import ManageWithdrawals from "@/pages/admin/ManageWithdrawals";
+import ManageComplaintsAndFeedback from "@/pages/admin/ManageComplaintsAndFeedback";
+import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
