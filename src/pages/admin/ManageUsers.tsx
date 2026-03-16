@@ -67,6 +67,7 @@ const ManageUsers = () => {
                   <TableHead>Email</TableHead>
                   <TableHead>Account Number</TableHead>
                   <TableHead>Team (L/R)</TableHead>
+                  <TableHead>Current Income</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -78,6 +79,7 @@ const ManageUsers = () => {
                     <TableCell>{user.email}</TableCell>
                     <TableCell className="font-mono text-sm font-semibold text-primary">{user.phone}</TableCell>
                     <TableCell>{user.leftTeam}/{user.rightTeam}</TableCell>
+                    <TableCell className="font-mono text-sm">PKR {Number(user.currentIncome || 0).toLocaleString()}</TableCell>
                     <TableCell>
                       <Badge className={user.isActive ? "bg-primary/10 text-primary border-primary/20" : "bg-destructive/10 text-destructive border-destructive/20"}>
                         {user.isActive ? "Active" : "Inactive"}
