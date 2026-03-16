@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Edit, Power } from "lucide-react";
+import { Users, Edit, Power, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
 
 const ManageUsers = () => {
@@ -16,6 +16,7 @@ const ManageUsers = () => {
   const [editUser, setEditUser] = useState<any | null>(null);
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const load = async () => {
@@ -47,6 +48,27 @@ const ManageUsers = () => {
       await load();
       toast({ title: "User Updated", description: `${editUser.firstName}'s info has been updated.` });
       setEditUser(null);
+    }
+  };
+
+  const deleteUser = async (user: any) => {
+    const confirmed = window.confirm(
+      `Delete ${user.firstName} ${user.lastName} and all users under this account in the binary tree? This will remove their records from the database.`
+    );
+    if (!confirmed) return;
+
+    setDeletingId(String(user.id));
+    try {
+      const result = await api(`/api/accounts/admin/users/${user.id}/`, { method: "DELETE" });
+      await load();
+      toast({
+        title: "User Deleted",
+        description: result.deletedCount > 1
+          ? `${result.deletedCount} users were removed from the database.`
+          : "User was removed from the database.",
+      });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -112,6 +134,15 @@ const ManageUsers = () => {
                         </Dialog>
                         <Button size="sm" variant="outline" onClick={() => toggleActive(user.id, !user.isActive)} className={user.isActive ? "text-destructive" : "text-primary"}>
                           <Power className="w-3 h-3 mr-1" /> {user.isActive ? "Deactivate" : "Activate"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => deleteUser(user)}
+                          disabled={deletingId === String(user.id)}
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          {deletingId === String(user.id) ? "Deleting..." : "Delete"}
                         </Button>
                       </div>
                     </TableCell>
