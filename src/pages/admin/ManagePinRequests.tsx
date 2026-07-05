@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Check, ExternalLink, Plus, Save, Trash2, Ticket, X } from "lucide-react";
+import { Check, ExternalLink, Save, Ticket, X } from "lucide-react";
 import { api } from "@/lib/api";
 
 type PinRequestRow = {
@@ -67,6 +67,22 @@ const defaultSettings: PinSettings = {
   },
 };
 
+const SUPPORTED_PAYMENT_METHODS = ["JazzCash", "Easypaisa", "Bank Account"];
+
+const normalizePaymentMethods = (settings: PinSettings): PaymentMethodDetail[] => {
+  const source = settings.paymentMethods?.length ? settings.paymentMethods : [settings.paymentDetails];
+  return SUPPORTED_PAYMENT_METHODS.map((paymentMethod) => {
+    const saved = source.find((method) => method.paymentMethod === paymentMethod);
+    return {
+      paymentMethod,
+      accountTitle: saved?.accountTitle || "",
+      accountNumber: saved?.accountNumber || "",
+      instructions: saved?.instructions || "",
+      qrCodeUrl: saved?.qrCodeUrl || null,
+    };
+  });
+};
+
 const ManagePinRequests = () => {
   const [requests, setRequests] = useState<PinRequestRow[]>([]);
   const [settings, setSettings] = useState<PinSettings>(defaultSettings);
@@ -82,7 +98,7 @@ const ManagePinRequests = () => {
     setRequests(rows);
     setSettings({
       ...config,
-      paymentMethods: config.paymentMethods?.length ? config.paymentMethods : [config.paymentDetails],
+      paymentMethods: normalizePaymentMethods(config),
     });
   };
 
@@ -90,7 +106,7 @@ const ManagePinRequests = () => {
     load().catch(() => setRequests([]));
   }, []);
 
-  const paymentMethods = settings.paymentMethods?.length ? settings.paymentMethods : [settings.paymentDetails];
+  const paymentMethods = normalizePaymentMethods(settings);
 
   const updatePaymentMethod = (index: number, field: keyof PaymentMethodDetail, value: string) => {
     setSettings((prev) => ({
@@ -99,29 +115,6 @@ const ManagePinRequests = () => {
         methodIndex === index ? { ...method, [field]: value } : method,
       ),
     }));
-  };
-
-  const addPaymentMethod = () => {
-    setSettings((prev) => ({
-      ...prev,
-      paymentMethods: [
-        ...(prev.paymentMethods?.length ? prev.paymentMethods : [prev.paymentDetails]),
-        { paymentMethod: "Easypaisa", accountTitle: "", accountNumber: "", instructions: "", qrCodeUrl: null },
-      ],
-    }));
-  };
-
-  const removePaymentMethod = (index: number) => {
-    setSettings((prev) => {
-      const current = prev.paymentMethods?.length ? prev.paymentMethods : [prev.paymentDetails];
-      const next = current.filter((_, methodIndex) => methodIndex !== index);
-      return { ...prev, paymentMethods: next.length ? next : current };
-    });
-    setQrFiles((prev) => {
-      const next = { ...prev };
-      delete next[index];
-      return next;
-    });
   };
 
   const saveSettings = async (event: React.FormEvent) => {
@@ -141,7 +134,7 @@ const ManagePinRequests = () => {
       });
       setSettings({
         ...nextSettings,
-        paymentMethods: nextSettings.paymentMethods?.length ? nextSettings.paymentMethods : [nextSettings.paymentDetails],
+        paymentMethods: normalizePaymentMethods(nextSettings),
       });
       setQrFiles({});
       toast({ title: "Settings Saved", description: "PIN purchase payment details were updated." });
@@ -198,28 +191,20 @@ const ManagePinRequests = () => {
               <div className="space-y-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <Label className="text-base font-semibold">Payment Methods</Label>
-                  <Button type="button" variant="outline" onClick={addPaymentMethod} className="gap-2 self-start sm:self-auto">
-                    <Plus className="h-4 w-4" />
-                    Add Method
-                  </Button>
+                  <p className="text-xs text-muted-foreground">Fill the details you want users to see for each supported method.</p>
                 </div>
 
                 {paymentMethods.map((method, index) => (
                   <div key={index} className="rounded-md border border-border/50 bg-muted/20 p-3">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <p className="text-sm font-semibold">Method {index + 1}</p>
-                      {paymentMethods.length > 1 ? (
-                        <Button type="button" size="sm" variant="outline" className="gap-1 text-destructive" onClick={() => removePaymentMethod(index)}>
-                          <Trash2 className="h-3 w-3" />
-                          Remove
-                        </Button>
-                      ) : null}
+                      <Badge variant="secondary">{method.paymentMethod}</Badge>
                     </div>
 
                     <div className="grid gap-4 lg:grid-cols-3">
                       <div className="space-y-2 min-w-0">
                         <Label>Payment Method</Label>
-                        <Select value={method.paymentMethod} onValueChange={(value) => updatePaymentMethod(index, "paymentMethod", value)}>
+                        <Select value={method.paymentMethod} disabled>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="JazzCash">JazzCash</SelectItem>
