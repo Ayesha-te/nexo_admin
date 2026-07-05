@@ -30,6 +30,7 @@ type PinRequestRow = {
 
 type PinSettings = {
   purchaseEnabled: boolean;
+  availableAgainTime: string;
   disabledMessage: string;
   pinPrice: number;
   minQuantity: number;
@@ -54,6 +55,7 @@ type PaymentMethodDetail = {
 
 const defaultSettings: PinSettings = {
   purchaseEnabled: true,
+  availableAgainTime: "",
   disabledMessage: "PIN/Token Purchase is temporarily unavailable. Please try again later.",
   pinPrice: 1000,
   minQuantity: 1,
@@ -123,6 +125,7 @@ const ManagePinRequests = () => {
     try {
       const formData = new FormData();
       formData.append("purchaseEnabled", String(settings.purchaseEnabled));
+      formData.append("availableAgainTime", settings.availableAgainTime || "");
       formData.append("paymentMethods", JSON.stringify(paymentMethods));
       Object.entries(qrFiles).forEach(([index, file]) => {
         if (file) formData.append(`qrCode_${index}`, file);
@@ -175,12 +178,20 @@ const ManagePinRequests = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={saveSettings} className="space-y-4">
-              <div className="flex items-center justify-between rounded-md border border-border/50 bg-muted/30 p-3">
+              <div className="grid gap-4 rounded-md border border-border/50 bg-muted/30 p-3 lg:grid-cols-[minmax(0,1fr)_220px_auto] lg:items-center">
                 <div>
                   <Label className="text-sm font-semibold">Purchase Status</Label>
                   <p className="text-xs text-muted-foreground">
                     {settings.purchaseEnabled ? "Users can submit new PIN purchase requests." : settings.disabledMessage}
                   </p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">Available Again Time</Label>
+                  <Input
+                    placeholder="8 A.M"
+                    value={settings.availableAgainTime || ""}
+                    onChange={(event) => setSettings((prev) => ({ ...prev, availableAgainTime: event.target.value }))}
+                  />
                 </div>
                 <Switch
                   checked={settings.purchaseEnabled}
