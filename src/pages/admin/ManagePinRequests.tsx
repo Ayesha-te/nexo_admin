@@ -51,6 +51,7 @@ type PaymentMethodDetail = {
   accountNumber: string;
   instructions: string;
   qrCodeUrl: string | null;
+  active?: boolean;
 };
 
 const defaultSettings: PinSettings = {
@@ -81,6 +82,7 @@ const normalizePaymentMethods = (settings: PinSettings): PaymentMethodDetail[] =
       accountNumber: saved?.accountNumber || "",
       instructions: saved?.instructions || "",
       qrCodeUrl: saved?.qrCodeUrl || null,
+      active: Boolean(saved?.active),
     };
   });
 };
@@ -119,12 +121,22 @@ const ManagePinRequests = () => {
     }));
   };
 
+  const setActivePaymentMethod = (index: number, active: boolean) => {
+    setSettings((prev) => ({
+      ...prev,
+      paymentMethods: normalizePaymentMethods(prev).map((method, methodIndex) => ({
+        ...method,
+        active: active ? methodIndex === index : methodIndex === index ? false : Boolean(method.active),
+      })),
+    }));
+  };
+
   const saveSettings = async (event: React.FormEvent) => {
     event.preventDefault();
     setSavingSettings(true);
     try {
       const formData = new FormData();
-      formData.append("purchaseEnabled", String(settings.purchaseEnabled));
+      formData.append("purchaseEnabled", String(paymentMethods.some((method) => method.active)));
       formData.append("availableAgainTime", settings.availableAgainTime || "");
       formData.append("paymentMethods", JSON.stringify(paymentMethods));
       Object.entries(qrFiles).forEach(([index, file]) => {
@@ -180,9 +192,11 @@ const ManagePinRequests = () => {
             <form onSubmit={saveSettings} className="space-y-4">
               <div className="grid gap-4 rounded-md border border-border/50 bg-muted/30 p-3 lg:grid-cols-[minmax(0,1fr)_220px_auto] lg:items-center">
                 <div>
-                  <Label className="text-sm font-semibold">Purchase Status</Label>
+                  <Label className="text-sm font-semibold">Payment Method Status</Label>
                   <p className="text-xs text-muted-foreground">
-                    {settings.purchaseEnabled ? "Users can submit new PIN purchase requests." : settings.disabledMessage}
+                    {paymentMethods.some((method) => method.active)
+                      ? "Only the active method will be visible to users."
+                      : "All methods are closed. Users will see the unavailable message and available again time."}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -193,10 +207,9 @@ const ManagePinRequests = () => {
                     onChange={(event) => setSettings((prev) => ({ ...prev, availableAgainTime: event.target.value }))}
                   />
                 </div>
-                <Switch
-                  checked={settings.purchaseEnabled}
-                  onCheckedChange={(checked) => setSettings((prev) => ({ ...prev, purchaseEnabled: checked }))}
-                />
+                <Badge variant={paymentMethods.some((method) => method.active) ? "secondary" : "destructive"}>
+                  {paymentMethods.some((method) => method.active) ? "Open" : "Closed"}
+                </Badge>
               </div>
 
               <div className="space-y-4">
@@ -209,7 +222,10 @@ const ManagePinRequests = () => {
                   <div key={index} className="rounded-md border border-border/50 bg-muted/20 p-3">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <p className="text-sm font-semibold">Method {index + 1}</p>
-                      <Badge variant="secondary">{method.paymentMethod}</Badge>
+                      <div className="flex items-center gap-3">
+                        <Badge variant={method.active ? "secondary" : "outline"}>{method.active ? "Active" : "Inactive"}</Badge>
+                        <Switch checked={Boolean(method.active)} onCheckedChange={(checked) => setActivePaymentMethod(index, checked)} />
+                      </div>
                     </div>
 
                     <div className="grid gap-4 lg:grid-cols-3">
