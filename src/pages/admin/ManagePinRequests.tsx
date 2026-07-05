@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Check, ExternalLink, Save, Ticket, X } from "lucide-react";
+import { Check, ExternalLink, Plus, Save, Trash2, Ticket, X } from "lucide-react";
 import { api } from "@/lib/api";
 
 type PinRequestRow = {
@@ -41,6 +41,15 @@ type PinSettings = {
     instructions: string;
     qrCodeUrl: string | null;
   };
+  paymentMethods?: PaymentMethodDetail[];
+};
+
+type PaymentMethodDetail = {
+  paymentMethod: string;
+  accountTitle: string;
+  accountNumber: string;
+  instructions: string;
+  qrCodeUrl: string | null;
 };
 
 const defaultSettings: PinSettings = {
@@ -61,7 +70,7 @@ const defaultSettings: PinSettings = {
 const ManagePinRequests = () => {
   const [requests, setRequests] = useState<PinRequestRow[]>([]);
   const [settings, setSettings] = useState<PinSettings>(defaultSettings);
-  const [qrCode, setQrCode] = useState<File | null>(null);
+  const [qrFiles, setQrFiles] = useState<Record<number, File | null>>({});
   const [savingSettings, setSavingSettings] = useState(false);
   const { toast } = useToast();
 
@@ -71,21 +80,48 @@ const ManagePinRequests = () => {
       api("/api/pins/admin/settings/"),
     ]);
     setRequests(rows);
-    setSettings(config);
+    setSettings({
+      ...config,
+      paymentMethods: config.paymentMethods?.length ? config.paymentMethods : [config.paymentDetails],
+    });
   };
 
   useEffect(() => {
     load().catch(() => setRequests([]));
   }, []);
 
-  const updatePaymentDetail = (field: keyof PinSettings["paymentDetails"], value: string) => {
+  const paymentMethods = settings.paymentMethods?.length ? settings.paymentMethods : [settings.paymentDetails];
+
+  const updatePaymentMethod = (index: number, field: keyof PaymentMethodDetail, value: string) => {
     setSettings((prev) => ({
       ...prev,
-      paymentDetails: {
-        ...prev.paymentDetails,
-        [field]: value,
-      },
+      paymentMethods: (prev.paymentMethods?.length ? prev.paymentMethods : [prev.paymentDetails]).map((method, methodIndex) =>
+        methodIndex === index ? { ...method, [field]: value } : method,
+      ),
     }));
+  };
+
+  const addPaymentMethod = () => {
+    setSettings((prev) => ({
+      ...prev,
+      paymentMethods: [
+        ...(prev.paymentMethods?.length ? prev.paymentMethods : [prev.paymentDetails]),
+        { paymentMethod: "Easypaisa", accountTitle: "", accountNumber: "", instructions: "", qrCodeUrl: null },
+      ],
+    }));
+  };
+
+  const removePaymentMethod = (index: number) => {
+    setSettings((prev) => {
+      const current = prev.paymentMethods?.length ? prev.paymentMethods : [prev.paymentDetails];
+      const next = current.filter((_, methodIndex) => methodIndex !== index);
+      return { ...prev, paymentMethods: next.length ? next : current };
+    });
+    setQrFiles((prev) => {
+      const next = { ...prev };
+      delete next[index];
+      return next;
+    });
   };
 
   const saveSettings = async (event: React.FormEvent) => {
@@ -94,20 +130,20 @@ const ManagePinRequests = () => {
     try {
       const formData = new FormData();
       formData.append("purchaseEnabled", String(settings.purchaseEnabled));
-      formData.append("accountTitle", settings.paymentDetails.accountTitle);
-      formData.append("accountNumber", settings.paymentDetails.accountNumber);
-      formData.append("paymentMethod", settings.paymentDetails.paymentMethod);
-      formData.append("instructions", settings.paymentDetails.instructions);
-      if (qrCode) formData.append("proofFile", qrCode);
+      formData.append("paymentMethods", JSON.stringify(paymentMethods));
+      Object.entries(qrFiles).forEach(([index, file]) => {
+        if (file) formData.append(`qrCode_${index}`, file);
+      });
 
       const nextSettings = await api("/api/pins/admin/settings/", {
         method: "POST",
         body: formData,
       });
-      setSettings(nextSettings);
-      setQrCode(null);
-      const fileInput = document.getElementById("pin-qr-code") as HTMLInputElement | null;
-      if (fileInput) fileInput.value = "";
+      setSettings({
+        ...nextSettings,
+        paymentMethods: nextSettings.paymentMethods?.length ? nextSettings.paymentMethods : [nextSettings.paymentDetails],
+      });
+      setQrFiles({});
       toast({ title: "Settings Saved", description: "PIN purchase payment details were updated." });
     } catch (err: any) {
       toast({ title: "Error", description: err.message || "Failed to save settings", variant: "destructive" });
@@ -134,7 +170,7 @@ const ManagePinRequests = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 animate-fade-in">
+      <div className="max-w-full space-y-6 overflow-hidden animate-fade-in">
         <h1 className="flex items-center gap-2 font-display text-2xl font-bold text-foreground">
           <Ticket className="h-6 w-6 text-primary" />
           Pin Requests & Settings
@@ -159,46 +195,70 @@ const ManagePinRequests = () => {
                 />
               </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="space-y-2">
-                  <Label>Payment Method</Label>
-                  <Select value={settings.paymentDetails.paymentMethod} onValueChange={(value) => updatePaymentDetail("paymentMethod", value)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="JazzCash">JazzCash</SelectItem>
-                      <SelectItem value="Easypaisa">Easypaisa</SelectItem>
-                      <SelectItem value="Bank Account">Bank Account</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <Label className="text-base font-semibold">Payment Methods</Label>
+                  <Button type="button" variant="outline" onClick={addPaymentMethod} className="gap-2 self-start sm:self-auto">
+                    <Plus className="h-4 w-4" />
+                    Add Method
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label>Account Title</Label>
-                  <Input value={settings.paymentDetails.accountTitle} onChange={(event) => updatePaymentDetail("accountTitle", event.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Account Number</Label>
-                  <Input value={settings.paymentDetails.accountNumber} onChange={(event) => updatePaymentDetail("accountNumber", event.target.value)} />
-                </div>
-              </div>
 
-              <div className="grid gap-4 md:grid-cols-[1fr_220px]">
-                <div className="space-y-2">
-                  <Label>Instruction Box</Label>
-                  <Textarea
-                    value={settings.paymentDetails.instructions}
-                    onChange={(event) => updatePaymentDetail("instructions", event.target.value)}
-                    className="min-h-[110px]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>QR Code (Optional)</Label>
-                  <Input id="pin-qr-code" type="file" accept="image/*" onChange={(event) => setQrCode(event.target.files?.[0] ?? null)} />
-                  {settings.paymentDetails.qrCodeUrl ? (
-                    <img src={settings.paymentDetails.qrCodeUrl} alt="Payment QR Code" className="h-28 w-28 rounded-md border object-contain" />
-                  ) : (
-                    <p className="text-xs text-muted-foreground">No QR code uploaded.</p>
-                  )}
-                </div>
+                {paymentMethods.map((method, index) => (
+                  <div key={index} className="rounded-md border border-border/50 bg-muted/20 p-3">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <p className="text-sm font-semibold">Method {index + 1}</p>
+                      {paymentMethods.length > 1 ? (
+                        <Button type="button" size="sm" variant="outline" className="gap-1 text-destructive" onClick={() => removePaymentMethod(index)}>
+                          <Trash2 className="h-3 w-3" />
+                          Remove
+                        </Button>
+                      ) : null}
+                    </div>
+
+                    <div className="grid gap-4 lg:grid-cols-3">
+                      <div className="space-y-2 min-w-0">
+                        <Label>Payment Method</Label>
+                        <Select value={method.paymentMethod} onValueChange={(value) => updatePaymentMethod(index, "paymentMethod", value)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="JazzCash">JazzCash</SelectItem>
+                            <SelectItem value="Easypaisa">Easypaisa</SelectItem>
+                            <SelectItem value="Bank Account">Bank Account</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2 min-w-0">
+                        <Label>Account Title</Label>
+                        <Input value={method.accountTitle} onChange={(event) => updatePaymentMethod(index, "accountTitle", event.target.value)} />
+                      </div>
+                      <div className="space-y-2 min-w-0">
+                        <Label>Account Number</Label>
+                        <Input value={method.accountNumber} onChange={(event) => updatePaymentMethod(index, "accountNumber", event.target.value)} />
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_240px]">
+                      <div className="space-y-2 min-w-0">
+                        <Label>Instruction Box</Label>
+                        <Textarea
+                          value={method.instructions}
+                          onChange={(event) => updatePaymentMethod(index, "instructions", event.target.value)}
+                          className="min-h-[96px]"
+                        />
+                      </div>
+                      <div className="space-y-2 min-w-0">
+                        <Label>QR Code (Optional)</Label>
+                        <Input type="file" accept="image/*" onChange={(event) => setQrFiles((prev) => ({ ...prev, [index]: event.target.files?.[0] ?? null }))} />
+                        {method.qrCodeUrl ? (
+                          <img src={method.qrCodeUrl} alt={`${method.paymentMethod} QR Code`} className="h-24 w-24 rounded-md border object-contain" />
+                        ) : (
+                          <p className="text-xs text-muted-foreground">No QR code uploaded.</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <div className="flex items-center justify-between gap-3">
@@ -216,8 +276,8 @@ const ManagePinRequests = () => {
 
         <Card className="nexo-card-glow border-border/50">
           <CardContent className="pt-6">
-            <div className="overflow-x-auto">
-              <Table className="min-w-[1250px]">
+            <div className="w-full max-w-full overflow-x-auto">
+              <Table className="min-w-[980px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>User Name</TableHead>
