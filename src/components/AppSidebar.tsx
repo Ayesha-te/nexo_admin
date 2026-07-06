@@ -42,6 +42,7 @@ const userMenuItems = [
 const adminMenuItems = [
   { title: "Admin Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
   { title: "Pin Requests & Settings", url: "/admin/pin-requests", icon: Ticket },
+  { title: "PIN Balances", url: "/admin/pin-balances", icon: Key },
   { title: "Manage Users", url: "/admin/users", icon: UserPlus },
   { title: "Manage Withdrawals", url: "/admin/withdrawals", icon: Wallet },
   { title: "Complaints & Feedback", url: "/admin/complaints", icon: MessageSquare },

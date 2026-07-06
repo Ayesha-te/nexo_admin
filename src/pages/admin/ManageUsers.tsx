@@ -87,7 +87,7 @@ const ManageUsers = () => {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Account Number</TableHead>
+                  <TableHead>Payment Details</TableHead>
                   <TableHead>Team (L/R)</TableHead>
                   <TableHead>Current Income</TableHead>
                   <TableHead>Status</TableHead>
@@ -99,7 +99,15 @@ const ManageUsers = () => {
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.firstName} {user.lastName}</TableCell>
                     <TableCell>{user.email}</TableCell>
-                    <TableCell className="font-mono text-sm font-semibold text-primary">{user.phone}</TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-foreground">
+                          {user.paymentMethod === "bank_account" ? "Bank Account" : user.paymentMethod === "jazzcash" ? "JazzCash" : "EasyPaisa"}
+                          {user.bankName ? <span className="ml-1 text-muted-foreground">({user.bankName})</span> : null}
+                        </p>
+                        <p className="font-mono text-sm font-semibold text-primary">{user.accountNumber || user.phone}</p>
+                      </div>
+                    </TableCell>
                     <TableCell>{user.leftTeam}/{user.rightTeam}</TableCell>
                     <TableCell className="font-mono text-sm">PKR {Number(user.currentIncome || 0).toLocaleString()}</TableCell>
                     <TableCell>

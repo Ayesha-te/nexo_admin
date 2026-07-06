@@ -14,6 +14,7 @@ type WithdrawalRow = {
   id: number;
   userName: string;
   paymentMethod: string;
+  bankName: string;
   accountNumber: string;
   amount: number;
   requestedAmount: number;
@@ -69,6 +70,8 @@ const ManageWithdrawals = () => {
         return "EasyPaisa";
       case "jazzcash":
         return "JazzCash";
+      case "bank_account":
+        return "Bank Account";
       default:
         return method;
     }
@@ -136,7 +139,10 @@ const ManageWithdrawals = () => {
               return (
                 <TableRow key={w.id}>
                   <TableCell className="font-medium whitespace-nowrap">{w.userName}</TableCell>
-                  <TableCell className="whitespace-nowrap">{formatPaymentMethod(w.paymentMethod)}</TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {formatPaymentMethod(w.paymentMethod)}
+                    {w.bankName ? <span className="ml-1 text-muted-foreground">({w.bankName})</span> : null}
+                  </TableCell>
                   <TableCell className="font-mono font-semibold text-secondary whitespace-nowrap">{w.accountNumber}</TableCell>
                   <TableCell className="whitespace-nowrap">{w.leftTeamTotal.toLocaleString()}</TableCell>
                   <TableCell className="whitespace-nowrap">{w.rightTeamTotal.toLocaleString()}</TableCell>

@@ -38,6 +38,7 @@ type PinSettings = {
   paymentDetails: {
     accountTitle: string;
     accountNumber: string;
+    bankName?: string;
     paymentMethod: string;
     instructions: string;
     qrCodeUrl: string | null;
@@ -49,6 +50,7 @@ type PaymentMethodDetail = {
   paymentMethod: string;
   accountTitle: string;
   accountNumber: string;
+  bankName?: string;
   instructions: string;
   qrCodeUrl: string | null;
   active?: boolean;
@@ -80,6 +82,7 @@ const normalizePaymentMethods = (settings: PinSettings): PaymentMethodDetail[] =
       paymentMethod,
       accountTitle: saved?.accountTitle || "",
       accountNumber: saved?.accountNumber || "",
+      bankName: saved?.bankName || "",
       instructions: saved?.instructions || "",
       qrCodeUrl: saved?.qrCodeUrl || null,
       active: Boolean(saved?.active),
@@ -119,6 +122,16 @@ const ManagePinRequests = () => {
         methodIndex === index ? { ...method, [field]: value } : method,
       ),
     }));
+  };
+
+  const removePaymentMethodQr = (index: number) => {
+    setSettings((prev) => ({
+      ...prev,
+      paymentMethods: normalizePaymentMethods(prev).map((method, methodIndex) =>
+        methodIndex === index ? { ...method, qrCodeUrl: null } : method,
+      ),
+    }));
+    setQrFiles((prev) => ({ ...prev, [index]: null }));
   };
 
   const setActivePaymentMethod = (index: number, active: boolean) => {
@@ -250,6 +263,17 @@ const ManagePinRequests = () => {
                       </div>
                     </div>
 
+                    {method.paymentMethod === "Bank Account" && (
+                      <div className="mt-4 space-y-2 min-w-0">
+                        <Label>Bank Name</Label>
+                        <Input
+                          placeholder="HBL, UBL, Meezan, Allied Bank..."
+                          value={method.bankName || ""}
+                          onChange={(event) => updatePaymentMethod(index, "bankName", event.target.value)}
+                        />
+                      </div>
+                    )}
+
                     <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_240px]">
                       <div className="space-y-2 min-w-0">
                         <Label>Instruction Box</Label>
@@ -261,9 +285,26 @@ const ManagePinRequests = () => {
                       </div>
                       <div className="space-y-2 min-w-0">
                         <Label>QR Code (Optional)</Label>
-                        <Input type="file" accept="image/*" onChange={(event) => setQrFiles((prev) => ({ ...prev, [index]: event.target.files?.[0] ?? null }))} />
-                        {method.qrCodeUrl ? (
-                          <img src={method.qrCodeUrl} alt={`${method.paymentMethod} QR Code`} className="h-24 w-24 rounded-md border object-contain" />
+                        <Input
+                          key={`${method.paymentMethod}-${method.qrCodeUrl || "no-qr"}-${qrFiles[index]?.name || "no-file"}`}
+                          type="file"
+                          accept="image/*"
+                          onChange={(event) => setQrFiles((prev) => ({ ...prev, [index]: event.target.files?.[0] ?? null }))}
+                        />
+                        {qrFiles[index] ? (
+                          <div className="flex items-center justify-between gap-2 rounded-md border border-border/50 bg-background/70 p-2 text-xs">
+                            <span className="truncate">Selected: {qrFiles[index]?.name}</span>
+                            <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-destructive" onClick={() => setQrFiles((prev) => ({ ...prev, [index]: null }))}>
+                              Remove
+                            </Button>
+                          </div>
+                        ) : method.qrCodeUrl ? (
+                          <div className="space-y-2">
+                            <img src={method.qrCodeUrl} alt={`${method.paymentMethod} QR Code`} className="h-24 w-24 rounded-md border object-contain" />
+                            <Button type="button" size="sm" variant="outline" className="text-destructive" onClick={() => removePaymentMethodQr(index)}>
+                              Remove QR
+                            </Button>
+                          </div>
                         ) : (
                           <p className="text-xs text-muted-foreground">No QR code uploaded.</p>
                         )}

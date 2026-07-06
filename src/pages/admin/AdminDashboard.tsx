@@ -3,17 +3,42 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { LayoutDashboard, Users, Ticket, Wallet, TrendingUp } from "lucide-react";
 import { api } from "@/lib/api";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 const AdminDashboard = () => {
   const [statsData, setStatsData] = useState<any>(null);
   const [recentRequests, setRecentRequests] = useState<any[]>([]);
   const [systemStatus, setSystemStatus] = useState<any>(null);
+  const [usdRatePkr, setUsdRatePkr] = useState("");
+  const [savingRate, setSavingRate] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     api("/api/accounts/admin/dashboard/").then(setStatsData).catch(() => setStatsData(null));
     api("/api/accounts/admin/system-status/").then(setSystemStatus).catch(() => setSystemStatus(null));
+    api("/api/accounts/admin/settings/").then((settings) => setUsdRatePkr(String(settings.usdRatePkr || ""))).catch(() => setUsdRatePkr(""));
     api("/api/pins/admin/requests/").then((rows) => setRecentRequests(rows.filter((r: any) => r.status === "pending"))).catch(() => setRecentRequests([]));
   }, []);
+
+  const saveUsdRate = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSavingRate(true);
+    try {
+      const settings = await api("/api/accounts/admin/settings/", {
+        method: "POST",
+        body: JSON.stringify({ usdRatePkr: Number(usdRatePkr) }),
+      });
+      setUsdRatePkr(String(settings.usdRatePkr || ""));
+      toast({ title: "USD Rate Saved", description: "User dashboard dollar display rate was updated." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error?.message || "Failed to save USD rate.", variant: "destructive" });
+    } finally {
+      setSavingRate(false);
+    }
+  };
 
   const adminStats = [
     { title: "Total Users", value: String(statsData?.totalUsers || 0), icon: Users, gradient: "from-primary to-nexo-green-light" },
@@ -47,6 +72,31 @@ const AdminDashboard = () => {
             </Card>
           ))}
         </div>
+
+        <Card className="nexo-card-glow border-border/50">
+          <CardContent className="pt-6">
+            <form onSubmit={saveUsdRate} className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px_auto] md:items-end">
+              <div>
+                <h3 className="font-display font-semibold text-foreground">Dollar Display Rate</h3>
+                <p className="mt-1 text-sm text-muted-foreground">Set the current PKR value of 1 USD. This is display-only for user earnings; withdrawals stay in PKR.</p>
+              </div>
+              <div className="space-y-2">
+                <Label>1 USD = PKR</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  step="0.01"
+                  value={usdRatePkr}
+                  onChange={(event) => setUsdRatePkr(event.target.value)}
+                  placeholder="280"
+                />
+              </div>
+              <Button type="submit" disabled={savingRate}>
+                {savingRate ? "Saving..." : "Save Rate"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
 
         {/* Recent Pending Requests */}
         <Card className="nexo-card-glow border-border/50">
