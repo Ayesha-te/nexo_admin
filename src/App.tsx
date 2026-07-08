@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import ManagePinRequests from "@/pages/admin/ManagePinRequests";
 import PinBalances from "@/pages/admin/PinBalances";
+import ResetUserPassword from "@/pages/admin/ResetUserPassword";
 import ManageUsers from "@/pages/admin/ManageUsers";
 import ManageWithdrawals from "@/pages/admin/ManageWithdrawals";
 import ManageComplaintsAndFeedback from "@/pages/admin/ManageComplaintsAndFeedback";
@@ -33,6 +34,7 @@ const AppRoutes = () => {
       <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/pin-requests" element={<ProtectedRoute><ManagePinRequests /></ProtectedRoute>} />
       <Route path="/admin/pin-balances" element={<ProtectedRoute><PinBalances /></ProtectedRoute>} />
+      <Route path="/admin/reset-password" element={<ProtectedRoute><ResetUserPassword /></ProtectedRoute>} />
       <Route path="/admin/users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
       <Route path="/admin/withdrawals" element={<ProtectedRoute><ManageWithdrawals /></ProtectedRoute>} />
       <Route path="/admin/complaints" element={<ProtectedRoute><ManageComplaintsAndFeedback /></ProtectedRoute>} />
