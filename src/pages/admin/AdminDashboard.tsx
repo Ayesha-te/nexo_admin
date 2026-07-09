@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Users, Ticket, Wallet, TrendingUp } from "lucide-react";
+import { Banknote, Gift, LayoutDashboard, PiggyBank, ReceiptText, Ticket, TrendingUp, Users, Wallet } from "lucide-react";
 import { api } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,36 @@ const AdminDashboard = () => {
     { title: "Pending Pin Requests", value: String(statsData?.pendingPinRequests || 0), icon: Ticket, gradient: "from-secondary to-nexo-gold-light" },
     { title: "Total Current Income", value: `PKR ${Number(statsData?.totalCurrentIncome || 0).toLocaleString()}`, icon: Wallet, gradient: "from-primary to-secondary" },
   ];
+  const financialReports = [
+    {
+      title: "Total Deposit",
+      value: `PKR ${Number(statsData?.totalDeposit || 0).toLocaleString()}`,
+      description: "Approved PIN/Token request amount only.",
+      icon: Banknote,
+      gradient: "from-emerald-500 to-teal-500",
+    },
+    {
+      title: "Total Withdrawal",
+      value: `PKR ${Number(statsData?.totalWithdrawal || 0).toLocaleString()}`,
+      description: "Processed final payable amount after withdrawal rules.",
+      icon: ReceiptText,
+      gradient: "from-sky-500 to-cyan-500",
+    },
+    {
+      title: "Total Rewards Paid",
+      value: `PKR ${Number(statsData?.totalRewardsPaid || 0).toLocaleString()}`,
+      description: "Full unlocked reward amount, separate from withdrawals.",
+      icon: Gift,
+      gradient: "from-amber-500 to-orange-500",
+    },
+    {
+      title: "Net System Profit",
+      value: `PKR ${Number(statsData?.netSystemProfit || 0).toLocaleString()}`,
+      description: "Deposits minus final withdrawals and rewards.",
+      icon: PiggyBank,
+      gradient: Number(statsData?.netSystemProfit || 0) >= 0 ? "from-primary to-nexo-green-light" : "from-destructive to-orange-500",
+    },
+  ];
 
   return (
     <DashboardLayout>
@@ -71,6 +101,33 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           ))}
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <h2 className="font-display text-xl font-bold text-foreground">Financial Reports</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Dashboard earnings stay full binary earnings. These reports count only real deposits, final payable withdrawals, and full rewards separately.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {financialReports.map((report) => (
+              <Card key={report.title} className="nexo-card-glow border-border/50 hover:scale-[1.02] transition-transform">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm text-muted-foreground">{report.title}</p>
+                      <p className="mt-1 font-display text-2xl font-bold text-foreground">{report.value}</p>
+                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{report.description}</p>
+                    </div>
+                    <div className={`w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br ${report.gradient} flex items-center justify-center`}>
+                      <report.icon className="w-6 h-6 text-primary-foreground" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
 
         <Card className="nexo-card-glow border-border/50">
