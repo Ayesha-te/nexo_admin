@@ -65,65 +65,67 @@ const ManageComplaintsAndFeedback = () => {
 
         <Card className="nexo-card-glow border-border/50">
           <CardContent className="pt-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {feedbackList.map((feedback) => (
-                  <TableRow key={feedback.id}>
-                    <TableCell className="font-medium">{feedback.name}</TableCell>
-                    <TableCell>{feedback.email}</TableCell>
-                    <TableCell>
-                      <Badge className={getTypeBadge(feedback.type)}>
-                        {feedback.type === "complaint" ? "🔴 Complaint" : "💬 Feedback"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{feedback.submittedAt}</TableCell>
-                    <TableCell>
-                      <Badge className={getStatusBadge(feedback.status)}>
-                        {feedback.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-primary border-primary/30 hover:bg-primary/10"
-                          onClick={() => handleViewDetails(feedback)}
-                        >
-                          <Eye className="w-3 h-3 mr-1" /> View
-                        </Button>
-                        {feedback.status !== "resolved" && (
+            <div className="w-full overflow-x-auto">
+              <Table className="min-w-[720px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {feedbackList.map((feedback) => (
+                    <TableRow key={feedback.id}>
+                      <TableCell className="font-medium">{feedback.name}</TableCell>
+                      <TableCell>{feedback.email}</TableCell>
+                      <TableCell>
+                        <Badge className={getTypeBadge(feedback.type)}>
+                          {feedback.type === "complaint" ? "🔴 Complaint" : "💬 Feedback"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{feedback.submittedAt}</TableCell>
+                      <TableCell>
+                        <Badge className={getStatusBadge(feedback.status)}>
+                          {feedback.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-2">
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-nexo-green border-nexo-green/30 hover:bg-nexo-green/10"
-                            onClick={() => handleStatusChange(feedback.id, "resolved")}
+                            className="text-primary border-primary/30 hover:bg-primary/10"
+                            onClick={() => handleViewDetails(feedback)}
                           >
-                            <Check className="w-3 h-3 mr-1" /> Resolve
+                            <Eye className="w-3 h-3 mr-1" /> View
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                          {feedback.status !== "resolved" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-nexo-green border-nexo-green/30 hover:bg-nexo-green/10"
+                              onClick={() => handleStatusChange(feedback.id, "resolved")}
+                            >
+                              <Check className="w-3 h-3 mr-1" /> Resolve
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-[calc(100%-2rem)] max-w-md rounded-xl">
           <DialogHeader>
             <DialogTitle>Feedback Details</DialogTitle>
           </DialogHeader>

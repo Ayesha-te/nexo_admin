@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { Banknote, Gift, LayoutDashboard, PiggyBank, ReceiptText, Ticket, TrendingUp, Users, Wallet } from "lucide-react";
+import { Banknote, CalendarCheck, Gift, LayoutDashboard, PiggyBank, ReceiptText, ScrollText, Ticket, TrendingUp, Users, Wallet } from "lucide-react";
 import { api } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -43,8 +43,13 @@ const AdminDashboard = () => {
   const adminStats = [
     { title: "Total Users", value: String(statsData?.totalUsers || 0), icon: Users, gradient: "from-primary to-nexo-green-light" },
     { title: "Active Users", value: String(statsData?.activeUsers || 0), icon: TrendingUp, gradient: "from-nexo-green-light to-primary" },
-    { title: "Pending Pin Requests", value: String(statsData?.pendingPinRequests || 0), icon: Ticket, gradient: "from-secondary to-nexo-gold-light" },
-    { title: "Total Current Income", value: `PKR ${Number(statsData?.totalCurrentIncome || 0).toLocaleString()}`, icon: Wallet, gradient: "from-primary to-secondary" },
+    { title: "Today's Joinings", value: String(statsData?.todayJoinings || 0), icon: CalendarCheck, gradient: "from-sky-500 to-cyan-500" },
+    { title: "Today's Deposits", value: `PKR ${Number(statsData?.todayDeposits || 0).toLocaleString()}`, icon: Banknote, gradient: "from-emerald-500 to-teal-500" },
+    { title: "Today's Withdrawals", value: `PKR ${Number(statsData?.todayWithdrawals || 0).toLocaleString()}`, icon: ReceiptText, gradient: "from-amber-500 to-orange-500" },
+    { title: "Pending PIN Token Requests", value: String(statsData?.pendingPinRequests || 0), icon: Ticket, gradient: "from-secondary to-nexo-gold-light" },
+    { title: "Pending Withdraw Requests", value: String(statsData?.pendingWithdrawRequests || 0), icon: ScrollText, gradient: "from-rose-500 to-orange-400" },
+    { title: "Total Income", value: `PKR ${Number(statsData?.totalCurrentIncome || 0).toLocaleString()}`, icon: Wallet, gradient: "from-primary to-secondary" },
+    { title: "System Balance", value: `PKR ${Number(statsData?.systemBalance || 0).toLocaleString()}`, icon: PiggyBank, gradient: "from-violet-500 to-indigo-500" },
   ];
   const financialReports = [
     {
@@ -85,17 +90,17 @@ const AdminDashboard = () => {
           Admin Dashboard
         </h1>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           {adminStats.map((stat) => (
             <Card key={stat.title} className="nexo-card-glow border-border/50 hover:scale-[1.02] transition-transform">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">{stat.title}</p>
-                    <p className="text-2xl font-bold font-display mt-1 text-foreground">{stat.value}</p>
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-snug">{stat.title}</p>
+                    <p className="text-lg sm:text-2xl font-bold font-display mt-1 text-foreground break-words">{stat.value}</p>
                   </div>
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center`}>
-                    <stat.icon className="w-6 h-6 text-primary-foreground" />
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center`}>
+                    <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
                   </div>
                 </div>
               </CardContent>
