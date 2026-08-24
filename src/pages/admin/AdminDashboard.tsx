@@ -49,7 +49,6 @@ const AdminDashboard = () => {
     { title: "Pending PIN Token Requests", value: String(statsData?.pendingPinRequests || 0), icon: Ticket, gradient: "from-secondary to-nexo-gold-light" },
     { title: "Pending Withdraw Requests", value: String(statsData?.pendingWithdrawRequests || 0), icon: ScrollText, gradient: "from-rose-500 to-orange-400" },
     { title: "Total Income", value: `PKR ${Number(statsData?.totalCurrentIncome || 0).toLocaleString()}`, icon: Wallet, gradient: "from-primary to-secondary" },
-    { title: "System Balance", value: `PKR ${Number(statsData?.systemBalance || 0).toLocaleString()}`, icon: PiggyBank, gradient: "from-violet-500 to-indigo-500" },
   ];
   const financialReports = [
     {

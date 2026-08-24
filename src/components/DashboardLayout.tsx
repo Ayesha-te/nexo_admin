@@ -46,12 +46,12 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-h-screen">
-          <header className="h-14 flex items-center border-b border-border bg-card px-4 sticky top-0 z-30">
+          <header className="h-16 flex items-center border-b border-border bg-card px-4 sticky top-0 z-30">
             <SidebarTrigger className="mr-4 relative z-50 md:h-7 md:w-7 h-9 w-9" />
             <img
               src="/ChatGPT_Image_Mar_3__2026__02_42_58_PM-removebg-preview.png"
               alt="Nexocart"
-              className="h-12 w-auto"
+              className="h-14 w-auto"
             />
             <div className="flex-1" />
             <Button variant="outline" size="sm" onClick={handleSignOut}>Sign Out</Button>

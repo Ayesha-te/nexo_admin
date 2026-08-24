@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Wallet, Check } from "lucide-react";
 import { api } from "@/lib/api";
@@ -109,8 +110,112 @@ const ManageWithdrawals = () => {
   const pendingWithdrawals = withdrawals.filter((w) => w.status === "pending");
   const processedWithdrawals = withdrawals.filter((w) => w.status === "processed");
 
+  const WithdrawalCards = ({ data }: { data: WithdrawalRow[] }) => (
+    <div className="space-y-3 md:hidden">
+      {data.length === 0 ? (
+        <p className="py-8 text-center text-sm text-muted-foreground">No records found</p>
+      ) : (
+        data.map((w) => {
+          const key = String(w.id);
+          const currentAdjustment = w.status === "pending" ? getAdjustmentValue(w.id) : Number(w.adminAdjustment || 0);
+          const finalAmount = Math.max((w.requestedAmount || w.amount) + currentAdjustment, 0);
+          return (
+            <Card key={w.id} className="border-border/50">
+              <CardContent className="space-y-3 p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-foreground">{w.userName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatPaymentMethod(w.paymentMethod)}
+                      {w.bankName ? ` (${w.bankName})` : ""}
+                    </p>
+                    <p className="font-mono text-sm font-semibold text-secondary">{w.accountNumber}</p>
+                  </div>
+                  <Badge className={`shrink-0 ${w.status === "processed" ? "bg-primary/10 text-primary border-primary/20" : "bg-secondary/10 text-secondary border-secondary/20"}`}>
+                    {w.status === "processed" ? "paid" : "pending"}
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 rounded-lg bg-muted/40 p-3 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground">L / R Team</p>
+                    <p className="font-medium text-foreground">{w.leftTeamTotal.toLocaleString()} / {w.rightTeamTotal.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Matched Sets</p>
+                    <p className="font-medium text-foreground">{w.matchedPairs.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">System Earnings</p>
+                    <p className="font-medium text-foreground">PKR {w.systemAddedEarnings.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Requested</p>
+                    <p className="font-medium text-foreground">PKR {(w.requestedAmount || w.amount).toLocaleString()}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-xs text-muted-foreground">Date</p>
+                    <p className="font-medium text-foreground">{w.date}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Admin Adjustment</Label>
+                  {w.status === "pending" ? (
+                    <Input
+                      type="number"
+                      value={adjustments[key] ?? String(w.adminAdjustment || 0)}
+                      onChange={(event) => setAdjustments((prev) => ({ ...prev, [key]: event.target.value }))}
+                      placeholder="0"
+                    />
+                  ) : (
+                    <p className={`text-sm font-medium ${w.adminAdjustment >= 0 ? "text-primary" : "text-destructive"}`}>
+                      PKR {Number(w.adminAdjustment || 0).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Admin Note</Label>
+                  {w.status === "pending" ? (
+                    <Textarea
+                      value={notes[key] ?? w.adminNote ?? ""}
+                      onChange={(event) => setNotes((prev) => ({ ...prev, [key]: event.target.value }))}
+                      placeholder="Optional admin note"
+                      className="min-h-[64px]"
+                    />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">{w.adminNote || "No note"}</p>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <span className="text-sm font-medium text-muted-foreground">Final Payout</span>
+                  <span className="font-bold text-primary">PKR {finalAmount.toLocaleString()}</span>
+                </div>
+
+                {w.status === "pending" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full text-primary"
+                    onClick={() => processWithdrawal(w.id)}
+                    disabled={processingId === key}
+                  >
+                    <Check className="w-3 h-3 mr-1" />
+                    {processingId === key ? "Approving..." : "Approve"}
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })
+      )}
+    </div>
+  );
+
   const WithdrawalTable = ({ data }: { data: WithdrawalRow[] }) => (
-    <div className="overflow-x-auto">
+    <div className="hidden overflow-x-auto md:block">
       <Table className="min-w-[1500px]">
         <TableHeader>
           <TableRow>
@@ -229,25 +334,27 @@ const ManageWithdrawals = () => {
         </Card>
 
         <Card className="nexo-card-glow border-secondary/30 bg-secondary/5">
-          <CardContent className="pt-6 pb-0">
+          <CardContent className="pt-6 pb-6 md:pb-0">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display text-lg font-bold text-secondary flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-secondary"></div>
                 Pending Withdrawals ({pendingWithdrawals.length})
               </h2>
             </div>
+            <WithdrawalCards data={pendingWithdrawals} />
             <WithdrawalTable data={pendingWithdrawals} />
           </CardContent>
         </Card>
 
         <Card className="nexo-card-glow border-primary/30 bg-primary/5">
-          <CardContent className="pt-6 pb-0">
+          <CardContent className="pt-6 pb-6 md:pb-0">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display text-lg font-bold text-primary flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-primary"></div>
                 Paid Withdrawals ({processedWithdrawals.length})
               </h2>
             </div>
+            <WithdrawalCards data={processedWithdrawals} />
             <WithdrawalTable data={processedWithdrawals} />
           </CardContent>
         </Card>

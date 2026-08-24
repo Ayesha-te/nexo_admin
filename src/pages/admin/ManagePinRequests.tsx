@@ -327,7 +327,84 @@ const ManagePinRequests = () => {
           </CardContent>
         </Card>
 
-        <Card className="nexo-card-glow border-border/50">
+        {/* Mobile card list */}
+        <div className="space-y-3 md:hidden">
+          {requests.length === 0 ? (
+            <Card className="nexo-card-glow border-border/50">
+              <CardContent className="py-8 text-center text-muted-foreground">No PIN purchase requests found.</CardContent>
+            </Card>
+          ) : (
+            requests.map((req) => (
+              <Card key={req.id} className="nexo-card-glow border-border/50">
+                <CardContent className="space-y-3 p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-foreground">{req.userName}</p>
+                      <p className="truncate font-mono text-xs text-muted-foreground">ID: {req.userId}</p>
+                    </div>
+                    <Badge className={`shrink-0 ${getStatusBadge(req.status)}`}>{req.status}</Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 rounded-lg bg-muted/40 p-3 text-sm">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Date & Time</p>
+                      <p className="font-medium text-foreground">{req.requestedAt}</p>
+                      {req.processedAt ? <p className="text-xs text-muted-foreground">Processed: {req.processedAt}</p> : null}
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Quantity</p>
+                      <p className="font-medium text-foreground">{req.quantity}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Amount</p>
+                      <p className="font-medium text-foreground">PKR {req.amount.toLocaleString()}</p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">Transaction ID</p>
+                      <p className="truncate font-mono font-medium text-foreground">{req.trxId}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs text-muted-foreground">Screenshot</p>
+                      {req.screenshotUrl ? (
+                        <a href={req.screenshotUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm font-medium text-primary">
+                          View <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Missing</span>
+                      )}
+                    </div>
+                    {req.generatedPins.length > 0 && (
+                      <div className="col-span-2">
+                        <p className="text-xs text-muted-foreground">Generated Codes</p>
+                        <div className="mt-1 max-h-28 space-y-1 overflow-auto text-xs font-mono">
+                          {req.generatedPins.map((pin) => (
+                            <p key={pin} className="break-all">{pin}</p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {req.status === "pending" ? (
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" className="flex-1 border-primary/30 text-primary hover:bg-primary/10" onClick={() => handleAction(req.id, "approved")}>
+                        <Check className="mr-1 h-3 w-3" /> Approve
+                      </Button>
+                      <Button size="sm" variant="outline" className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => handleAction(req.id, "rejected")}>
+                        <X className="mr-1 h-3 w-3" /> Reject
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Completed</p>
+                  )}
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+
+        {/* Desktop table */}
+        <Card className="nexo-card-glow border-border/50 hidden md:block">
           <CardContent className="pt-6">
             <div className="w-full max-w-full overflow-x-auto">
               <Table className="min-w-[980px]">
