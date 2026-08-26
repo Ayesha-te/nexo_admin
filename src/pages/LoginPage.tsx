@@ -22,6 +22,15 @@ const LoginPage = () => {
     setError("");
     try {
       await login(identifier, password);
+      const CredentialCtor = (window as any).PasswordCredential;
+      if (CredentialCtor && navigator.credentials) {
+        try {
+          const credential = new CredentialCtor({ id: identifier, password, name: identifier });
+          await navigator.credentials.store(credential);
+        } catch {
+          // Password Manager save is a best-effort enhancement; ignore failures.
+        }
+      }
       navigate("/admin/dashboard");
     } catch (err: any) {
       setError(err.message || "Login failed");

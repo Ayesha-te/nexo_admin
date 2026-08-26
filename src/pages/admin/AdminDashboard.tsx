@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { Banknote, CalendarCheck, Gift, LayoutDashboard, PiggyBank, ReceiptText, ScrollText, Ticket, TrendingUp, Users, Wallet } from "lucide-react";
+import { Banknote, CalendarCheck, Gift, LayoutDashboard, PiggyBank, ReceiptText, ScrollText, Ticket, TrendingUp, UserCheck, Users, Wallet } from "lucide-react";
 import { api } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,7 @@ const AdminDashboard = () => {
     { title: "Active Users", value: String(statsData?.activeUsers || 0), icon: TrendingUp, gradient: "from-nexo-green-light to-primary" },
     { title: "Today's Joinings", value: String(statsData?.todayJoinings || 0), icon: CalendarCheck, gradient: "from-sky-500 to-cyan-500" },
     { title: "Today's Deposits", value: `PKR ${Number(statsData?.todayDeposits || 0).toLocaleString()}`, icon: Banknote, gradient: "from-emerald-500 to-teal-500" },
-    { title: "Today's Withdrawals", value: `PKR ${Number(statsData?.todayWithdrawals || 0).toLocaleString()}`, icon: ReceiptText, gradient: "from-amber-500 to-orange-500" },
+    { title: "Today's Activated Accounts", value: String(statsData?.todayActivations || 0), icon: UserCheck, gradient: "from-amber-500 to-orange-500" },
     { title: "Pending PIN Token Requests", value: String(statsData?.pendingPinRequests || 0), icon: Ticket, gradient: "from-secondary to-nexo-gold-light" },
     { title: "Pending Withdraw Requests", value: String(statsData?.pendingWithdrawRequests || 0), icon: ScrollText, gradient: "from-rose-500 to-orange-400" },
     { title: "Total Income", value: `PKR ${Number(statsData?.totalCurrentIncome || 0).toLocaleString()}`, icon: Wallet, gradient: "from-primary to-secondary" },

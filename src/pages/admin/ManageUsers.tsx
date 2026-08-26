@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Edit, Power, Trash2 } from "lucide-react";
+import { Users, Edit, Power, Search, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
 
 const PAYMENT_METHOD_OPTIONS = [
@@ -27,6 +27,7 @@ const formatPaymentMethod = (method: string) => {
 
 const ManageUsers = () => {
   const [users, setUsers] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
   const [editUser, setEditUser] = useState<any | null>(null);
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
@@ -122,6 +123,18 @@ const ManageUsers = () => {
     }
   };
 
+  const filteredUsers = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return users;
+    return users.filter((user) =>
+      [user.firstName, user.lastName, user.email, user.phone, user.accountNumber, user.username]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(term),
+    );
+  }, [users, search]);
+
   const editDialog = (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogContent className="max-h-[90vh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-xl">
@@ -181,19 +194,30 @@ const ManageUsers = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6 animate-fade-in">
-        <h1 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
-          <Users className="w-6 h-6 text-primary" />
-          Manage Users
-        </h1>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
+            <Users className="w-6 h-6 text-primary" />
+            Manage Users
+          </h1>
+          <div className="relative sm:max-w-xs sm:flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search by name, email, or number..."
+              className="pl-10"
+            />
+          </div>
+        </div>
 
         {/* Mobile card list */}
         <div className="space-y-3 md:hidden">
-          {users.length === 0 ? (
+          {filteredUsers.length === 0 ? (
             <Card className="nexo-card-glow border-border/50">
               <CardContent className="py-8 text-center text-muted-foreground">No users found.</CardContent>
             </Card>
           ) : (
-            users.map((user) => (
+            filteredUsers.map((user) => (
               <Card key={user.id} className="nexo-card-glow border-border/50">
                 <CardContent className="space-y-3 p-4">
                   <div className="flex items-start justify-between gap-2">
@@ -271,7 +295,11 @@ const ManageUsers = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((user) => (
+                  {filteredUsers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">No users found.</TableCell>
+                    </TableRow>
+                  ) : filteredUsers.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">{user.firstName} {user.lastName}</TableCell>
                       <TableCell>{user.email}</TableCell>
