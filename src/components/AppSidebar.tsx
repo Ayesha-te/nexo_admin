@@ -70,7 +70,7 @@ export function AppSidebar() {
           <img
             src="/ChatGPT_Image_Mar_3__2026__02_42_58_PM-removebg-preview.png"
             alt="Nexocart"
-            className="h-20 w-auto flex-shrink-0"
+            className="h-32 w-auto flex-shrink-0"
           />
           {!collapsed && (
             <div>
