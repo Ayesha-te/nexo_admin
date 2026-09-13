@@ -25,6 +25,10 @@ import {
   Settings,
   LogOut,
   MessageSquare,
+  MonitorPlay,
+  CalendarCheck,
+  Trophy,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -47,6 +51,10 @@ const adminMenuItems = [
   { title: "Manage Users", url: "/admin/users", icon: UserPlus },
   { title: "Manage Withdrawals", url: "/admin/withdrawals", icon: Wallet },
   { title: "Complaints & Feedback", url: "/admin/complaints", icon: MessageSquare },
+  { title: "Ads Settings", url: "/admin/ads-settings", icon: MonitorPlay },
+  { title: "Today's Attendance", url: "/admin/attendance/today", icon: CalendarCheck },
+  { title: "Attendance Ranking", url: "/admin/attendance/ranking", icon: Trophy },
+  { title: "Notification Settings", url: "/admin/notification-settings", icon: Bell },
 ];
 
 export function AppSidebar() {

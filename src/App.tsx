@@ -12,6 +12,10 @@ import ResetUserPassword from "@/pages/admin/ResetUserPassword";
 import ManageUsers from "@/pages/admin/ManageUsers";
 import ManageWithdrawals from "@/pages/admin/ManageWithdrawals";
 import ManageComplaintsAndFeedback from "@/pages/admin/ManageComplaintsAndFeedback";
+import AdsSettings from "@/pages/admin/AdsSettings";
+import TodaysAttendance from "@/pages/admin/TodaysAttendance";
+import AttendanceRanking from "@/pages/admin/AttendanceRanking";
+import NotificationSettings from "@/pages/admin/NotificationSettings";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +42,10 @@ const AppRoutes = () => {
       <Route path="/admin/users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
       <Route path="/admin/withdrawals" element={<ProtectedRoute><ManageWithdrawals /></ProtectedRoute>} />
       <Route path="/admin/complaints" element={<ProtectedRoute><ManageComplaintsAndFeedback /></ProtectedRoute>} />
+      <Route path="/admin/ads-settings" element={<ProtectedRoute><AdsSettings /></ProtectedRoute>} />
+      <Route path="/admin/attendance/today" element={<ProtectedRoute><TodaysAttendance /></ProtectedRoute>} />
+      <Route path="/admin/attendance/ranking" element={<ProtectedRoute><AttendanceRanking /></ProtectedRoute>} />
+      <Route path="/admin/notification-settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
