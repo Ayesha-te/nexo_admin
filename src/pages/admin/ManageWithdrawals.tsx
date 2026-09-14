@@ -24,8 +24,11 @@ type WithdrawalRow = {
   netAmount: number;
   leftTeamTotal: number;
   rightTeamTotal: number;
+  totalTeam: number;
+  unmatchedTeam: number;
   matchedPairs: number;
   systemAddedEarnings: number;
+  adsEarningTotal: number;
   adminAdjustment: number;
   adminNote: string;
   finalAmount: number;
@@ -146,8 +149,20 @@ const ManageWithdrawals = () => {
                     <p className="font-medium text-foreground">{w.matchedPairs.toLocaleString()}</p>
                   </div>
                   <div>
+                    <p className="text-xs text-muted-foreground">Total Team</p>
+                    <p className="font-medium text-foreground">{w.totalTeam.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Unmatched Team</p>
+                    <p className="font-medium text-foreground">{w.unmatchedTeam.toLocaleString()}</p>
+                  </div>
+                  <div>
                     <p className="text-xs text-muted-foreground">System Earnings</p>
                     <p className="font-medium text-foreground">PKR {w.systemAddedEarnings.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Ads Earning (Lifetime)</p>
+                    <p className="font-medium text-foreground">PKR {Number(w.adsEarningTotal).toLocaleString()}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Requested</p>
@@ -216,7 +231,7 @@ const ManageWithdrawals = () => {
 
   const WithdrawalTable = ({ data }: { data: WithdrawalRow[] }) => (
     <div className="hidden overflow-x-auto md:block">
-      <Table className="min-w-[1500px]">
+      <Table className="min-w-[1850px]">
         <TableHeader>
           <TableRow>
             <TableHead>User</TableHead>
@@ -224,8 +239,11 @@ const ManageWithdrawals = () => {
             <TableHead>Account</TableHead>
             <TableHead>L Team</TableHead>
             <TableHead>R Team</TableHead>
+            <TableHead>Total Team</TableHead>
+            <TableHead>Unmatched Team</TableHead>
             <TableHead>Sets</TableHead>
             <TableHead>System Earnings</TableHead>
+            <TableHead>Ads Earning (Lifetime)</TableHead>
             <TableHead>Requested</TableHead>
             <TableHead>Admin Adjustment</TableHead>
             <TableHead>Final Payout</TableHead>
@@ -251,8 +269,11 @@ const ManageWithdrawals = () => {
                   <TableCell className="font-mono font-semibold text-secondary whitespace-nowrap">{w.accountNumber}</TableCell>
                   <TableCell className="whitespace-nowrap">{w.leftTeamTotal.toLocaleString()}</TableCell>
                   <TableCell className="whitespace-nowrap">{w.rightTeamTotal.toLocaleString()}</TableCell>
+                  <TableCell className="whitespace-nowrap">{w.totalTeam.toLocaleString()}</TableCell>
+                  <TableCell className="whitespace-nowrap">{w.unmatchedTeam.toLocaleString()}</TableCell>
                   <TableCell className="whitespace-nowrap">{w.matchedPairs.toLocaleString()}</TableCell>
                   <TableCell className="whitespace-nowrap">PKR {w.systemAddedEarnings.toLocaleString()}</TableCell>
+                  <TableCell className="whitespace-nowrap">PKR {Number(w.adsEarningTotal).toLocaleString()}</TableCell>
                   <TableCell className="whitespace-nowrap">PKR {(w.requestedAmount || w.amount).toLocaleString()}</TableCell>
                   <TableCell className="min-w-[160px]">
                     {w.status === "pending" ? (
@@ -306,7 +327,7 @@ const ManageWithdrawals = () => {
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={14} className="text-center text-muted-foreground py-8">
+              <TableCell colSpan={17} className="text-center text-muted-foreground py-8">
                 No records found
               </TableCell>
             </TableRow>
