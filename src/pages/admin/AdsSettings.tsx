@@ -234,7 +234,7 @@ const AdsSettings = () => {
                     }}
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <div className="flex items-center gap-3 rounded-lg bg-background/60 p-3">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shrink-0">
                       <Wallet className="h-5 w-5 text-primary-foreground" />
@@ -281,7 +281,7 @@ const AdsSettings = () => {
                     }}
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <div className="flex items-center gap-3 rounded-lg bg-background/60 p-3">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shrink-0">
                       <Wallet className="h-5 w-5 text-primary-foreground" />
