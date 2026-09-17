@@ -34,6 +34,8 @@ type WithdrawalRow = {
   finalAmount: number;
   date: string;
   status: "pending" | "processed";
+  createdAt: string;
+  processedAt: string | null;
 };
 
 const ManageWithdrawals = () => {
@@ -84,6 +86,11 @@ const ManageWithdrawals = () => {
   const getAdjustmentValue = (id: number) => Number(adjustments[String(id)] || 0);
 
   const processWithdrawal = async (id: number) => {
+    // Guard against a double-click/duplicate submit slipping in before React re-renders
+    // the button's disabled state - the backend is already idempotent (a withdrawal that
+    // isn't "pending" anymore is rejected with a clear error), this is just an extra,
+    // instant client-side guard on top of that.
+    if (processingId) return;
     const key = String(id);
     setProcessingId(key);
     try {
@@ -95,11 +102,32 @@ const ManageWithdrawals = () => {
         }),
       });
     } catch (error: any) {
-      toast({
-        title: "Approval Failed",
-        description: error?.message || "This withdrawal could not be approved.",
-        variant: "destructive",
-      });
+      // A network-level failure (timeout, dropped connection) here does NOT mean the
+      // approval didn't happen - the request may have reached and been fully processed by
+      // the server before the response was lost. Re-check the real status before telling
+      // the admin it failed, so a lost response never gets mistaken for "safe to retry".
+      let actuallyProcessed = false;
+      try {
+        const fresh = await api("/api/withdrawals/admin/");
+        const match = fresh.find((row: WithdrawalRow) => row.id === id);
+        actuallyProcessed = match?.status === "processed";
+        setWithdrawals(fresh);
+      } catch {
+        // Couldn't verify either - fall through and report the original error as-is.
+      }
+
+      if (actuallyProcessed) {
+        toast({
+          title: "Withdrawal Already Processed",
+          description: "The approval actually went through - the earlier error was just the response getting lost, not a failed approval.",
+        });
+      } else {
+        toast({
+          title: "Approval Failed",
+          description: error?.message || "This withdrawal could not be approved.",
+          variant: "destructive",
+        });
+      }
       setProcessingId(null);
       return;
     }
@@ -139,12 +167,18 @@ const ManageWithdrawals = () => {
               <CardContent className="space-y-3 p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-foreground">{w.userName}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="truncate font-semibold text-foreground">{w.userName}</p>
+                      <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">#{w.id}</span>
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {formatPaymentMethod(w.paymentMethod)}
                       {w.bankName ? ` (${w.bankName})` : ""}
                     </p>
                     <p className="font-mono text-sm font-semibold text-secondary">{w.accountNumber}</p>
+                    {w.status === "processed" && w.processedAt && (
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">Paid: {new Date(w.processedAt).toLocaleString()}</p>
+                    )}
                   </div>
                   <Badge className={`shrink-0 ${w.status === "processed" ? "bg-primary/10 text-primary border-primary/20" : "bg-secondary/10 text-secondary border-secondary/20"}`}>
                     {w.status === "processed" ? "paid" : "pending"}
@@ -243,9 +277,10 @@ const ManageWithdrawals = () => {
 
   const WithdrawalTable = ({ data }: { data: WithdrawalRow[] }) => (
     <div className="hidden overflow-x-auto md:block">
-      <Table className="min-w-[1850px]">
+      <Table className="min-w-[2150px]">
         <TableHeader>
           <TableRow>
+            <TableHead>ID</TableHead>
             <TableHead>User</TableHead>
             <TableHead>Payment</TableHead>
             <TableHead>Account</TableHead>
@@ -261,6 +296,7 @@ const ManageWithdrawals = () => {
             <TableHead>Final Payout</TableHead>
             <TableHead>Admin Note</TableHead>
             <TableHead>Date</TableHead>
+            <TableHead>Processed At</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Action</TableHead>
           </TableRow>
@@ -273,6 +309,7 @@ const ManageWithdrawals = () => {
               const finalAmount = Math.max((w.requestedAmount || w.amount) + currentAdjustment, 0);
               return (
                 <TableRow key={w.id}>
+                  <TableCell className="whitespace-nowrap font-mono text-xs text-muted-foreground">#{w.id}</TableCell>
                   <TableCell className="font-medium whitespace-nowrap">{w.userName}</TableCell>
                   <TableCell className="whitespace-nowrap">
                     {formatPaymentMethod(w.paymentMethod)}
@@ -315,6 +352,9 @@ const ManageWithdrawals = () => {
                     )}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">{w.date}</TableCell>
+                  <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                    {w.processedAt ? new Date(w.processedAt).toLocaleString() : "-"}
+                  </TableCell>
                   <TableCell className="whitespace-nowrap">
                     <Badge className={w.status === "processed" ? "bg-primary/10 text-primary border-primary/20" : "bg-secondary/10 text-secondary border-secondary/20"}>
                       {w.status === "processed" ? "paid" : "pending"}
@@ -339,7 +379,7 @@ const ManageWithdrawals = () => {
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={17} className="text-center text-muted-foreground py-8">
+              <TableCell colSpan={19} className="text-center text-muted-foreground py-8">
                 No records found
               </TableCell>
             </TableRow>
