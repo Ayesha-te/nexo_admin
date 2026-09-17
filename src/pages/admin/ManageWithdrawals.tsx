@@ -94,16 +94,28 @@ const ManageWithdrawals = () => {
           adminNote: notes[key] || "",
         }),
       });
-      toast({
-        title: "Withdrawal Approved",
-        description: "The withdrawal was approved with the current admin adjustment.",
-      });
-      await load();
     } catch (error: any) {
       toast({
         title: "Approval Failed",
         description: error?.message || "This withdrawal could not be approved.",
         variant: "destructive",
+      });
+      setProcessingId(null);
+      return;
+    }
+
+    // The approval itself already succeeded at this point - a failure below is only the
+    // list refresh, not the approval, so it must never be reported as an approval failure.
+    toast({
+      title: "Withdrawal Approved",
+      description: "The withdrawal was approved with the current admin adjustment.",
+    });
+    try {
+      await load();
+    } catch {
+      toast({
+        title: "List Refresh Failed",
+        description: "The withdrawal was approved, but the list couldn't refresh automatically. Reload the page to see the latest status.",
       });
     } finally {
       setProcessingId(null);
