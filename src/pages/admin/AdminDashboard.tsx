@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { Banknote, CalendarCheck, Gift, LayoutDashboard, PiggyBank, ReceiptText, ScrollText, Ticket, TrendingUp, UserCheck, Users, Wallet } from "lucide-react";
+import { Banknote, CalendarCheck, Clapperboard, Gift, LayoutDashboard, PiggyBank, ReceiptText, ScrollText, Ticket, TrendingUp, UserCheck, Users, Wallet } from "lucide-react";
 import { api } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -71,6 +71,13 @@ const AdminDashboard = () => {
       description: "Full unlocked reward amount, separate from withdrawals.",
       icon: Gift,
       gradient: "from-amber-500 to-orange-500",
+    },
+    {
+      title: "Total Ads Payout",
+      value: `PKR ${Number(statsData?.totalAdsPayout || 0).toLocaleString()}`,
+      description: "All-time reward total paid out for completed Ads views.",
+      icon: Clapperboard,
+      gradient: "from-violet-500 to-fuchsia-500",
     },
     {
       title: "Net System Profit",
