@@ -43,6 +43,7 @@ const ManageWithdrawals = () => {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [adjustments, setAdjustments] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [resyncing, setResyncing] = useState(false);
   const { toast } = useToast();
 
   const load = async () => {
@@ -64,6 +65,19 @@ const ManageWithdrawals = () => {
       });
       return next;
     });
+  };
+
+  const handleResync = async () => {
+    setResyncing(true);
+    try {
+      await api("/api/withdrawals/admin/resync/", { method: "POST" });
+      await load();
+      toast({ title: "Resynced", description: "Pending withdrawals were recalculated from current balances." });
+    } catch (error: any) {
+      toast({ title: "Resync Failed", description: error?.message || "Could not resync pending withdrawals.", variant: "destructive" });
+    } finally {
+      setResyncing(false);
+    }
   };
 
   useEffect(() => {
@@ -392,10 +406,21 @@ const ManageWithdrawals = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6 animate-fade-in">
-        <h1 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
-          <Wallet className="w-6 h-6 text-primary" />
-          Manage Withdrawals
-        </h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
+            <Wallet className="w-6 h-6 text-primary" />
+            Manage Withdrawals
+          </h1>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleResync}
+            disabled={resyncing}
+            title="Recalculate pending withdrawals for every user from their current balance. Use this if an account's earnings aren't showing up as a pending withdrawal yet."
+          >
+            {resyncing ? "Resyncing..." : "🔄 Resync Pending Withdrawals"}
+          </Button>
+        </div>
 
         <Card className="border-secondary/30 bg-secondary/5">
           <CardContent className="pt-6 space-y-2 text-sm">
