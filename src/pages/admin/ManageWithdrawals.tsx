@@ -14,6 +14,7 @@ import { api } from "@/lib/api";
 type WithdrawalRow = {
   id: number;
   userName: string;
+  userEmail: string;
   paymentMethod: string;
   bankName: string;
   accountNumber: string;
@@ -40,7 +41,11 @@ type WithdrawalRow = {
 
 const ManageWithdrawals = () => {
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
-  const [processingId, setProcessingId] = useState<string | null>(null);
+  // A Set so multiple withdrawals can be approved concurrently, independently of each
+  // other. This used to be a single string, which meant clicking Approve on a second row
+  // while a first was still in flight got silently ignored - fixing that is the whole
+  // point of this being a Set instead.
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
   const [adjustments, setAdjustments] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [resyncing, setResyncing] = useState(false);
@@ -99,14 +104,23 @@ const ManageWithdrawals = () => {
 
   const getAdjustmentValue = (id: number) => Number(adjustments[String(id)] || 0);
 
+  const clearProcessing = (key: string) => {
+    setProcessingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(key);
+      return next;
+    });
+  };
+
   const processWithdrawal = async (id: number) => {
-    // Guard against a double-click/duplicate submit slipping in before React re-renders
-    // the button's disabled state - the backend is already idempotent (a withdrawal that
-    // isn't "pending" anymore is rejected with a clear error), this is just an extra,
-    // instant client-side guard on top of that.
-    if (processingId) return;
     const key = String(id);
-    setProcessingId(key);
+    // Guard against a double-click/duplicate submit on THIS SAME row slipping in before
+    // React re-renders the button's disabled state - the backend is already idempotent (a
+    // withdrawal that isn't "pending" anymore is rejected with a clear error), this is
+    // just an extra, instant client-side guard on top of that. Other rows are unaffected,
+    // so approving several withdrawals in a row all actually go through.
+    if (processingIds.has(key)) return;
+    setProcessingIds((prev) => new Set(prev).add(key));
     try {
       await api(`/api/withdrawals/admin/${id}/approve/`, {
         method: "POST",
@@ -142,7 +156,7 @@ const ManageWithdrawals = () => {
           variant: "destructive",
         });
       }
-      setProcessingId(null);
+      clearProcessing(key);
       return;
     }
 
@@ -160,7 +174,7 @@ const ManageWithdrawals = () => {
         description: "The withdrawal was approved, but the list couldn't refresh automatically. Reload the page to see the latest status.",
       });
     } finally {
-      setProcessingId(null);
+      clearProcessing(key);
     }
   };
 
@@ -185,6 +199,7 @@ const ManageWithdrawals = () => {
                       <p className="truncate font-semibold text-foreground">{w.userName}</p>
                       <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">#{w.id}</span>
                     </div>
+                    {w.userEmail && <p className="truncate text-xs text-muted-foreground">{w.userEmail}</p>}
                     <p className="text-xs text-muted-foreground">
                       {formatPaymentMethod(w.paymentMethod)}
                       {w.bankName ? ` (${w.bankName})` : ""}
@@ -275,10 +290,10 @@ const ManageWithdrawals = () => {
                     variant="outline"
                     className="w-full text-primary"
                     onClick={() => processWithdrawal(w.id)}
-                    disabled={processingId === key}
+                    disabled={processingIds.has(key)}
                   >
                     <Check className="w-3 h-3 mr-1" />
-                    {processingId === key ? "Approving..." : "Approve"}
+                    {processingIds.has(key) ? "Approving..." : "Approve"}
                   </Button>
                 )}
               </CardContent>
@@ -291,11 +306,12 @@ const ManageWithdrawals = () => {
 
   const WithdrawalTable = ({ data }: { data: WithdrawalRow[] }) => (
     <div className="hidden overflow-x-auto md:block">
-      <Table className="min-w-[2150px]">
+      <Table className="min-w-[2350px]">
         <TableHeader>
           <TableRow>
             <TableHead>ID</TableHead>
             <TableHead>User</TableHead>
+            <TableHead>Email</TableHead>
             <TableHead>Payment</TableHead>
             <TableHead>Account</TableHead>
             <TableHead>L Team</TableHead>
@@ -325,6 +341,7 @@ const ManageWithdrawals = () => {
                 <TableRow key={w.id}>
                   <TableCell className="whitespace-nowrap font-mono text-xs text-muted-foreground">#{w.id}</TableCell>
                   <TableCell className="font-medium whitespace-nowrap">{w.userName}</TableCell>
+                  <TableCell className="whitespace-nowrap text-sm text-muted-foreground">{w.userEmail}</TableCell>
                   <TableCell className="whitespace-nowrap">
                     {formatPaymentMethod(w.paymentMethod)}
                     {w.bankName ? <span className="ml-1 text-muted-foreground">({w.bankName})</span> : null}
@@ -381,10 +398,10 @@ const ManageWithdrawals = () => {
                         variant="outline"
                         className="text-primary"
                         onClick={() => processWithdrawal(w.id)}
-                        disabled={processingId === key}
+                        disabled={processingIds.has(key)}
                       >
                         <Check className="w-3 h-3 mr-1" />
-                        {processingId === key ? "Approving..." : "Approve"}
+                        {processingIds.has(key) ? "Approving..." : "Approve"}
                       </Button>
                     )}
                   </TableCell>
@@ -393,7 +410,7 @@ const ManageWithdrawals = () => {
             })
           ) : (
             <TableRow>
-              <TableCell colSpan={19} className="text-center text-muted-foreground py-8">
+              <TableCell colSpan={20} className="text-center text-muted-foreground py-8">
                 No records found
               </TableCell>
             </TableRow>
