@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { Banknote, CalendarCheck, Clapperboard, Gift, LayoutDashboard, PiggyBank, ReceiptText, ScrollText, Ticket, TrendingUp, UserCheck, Users, Wallet } from "lucide-react";
+import { Banknote, CalendarCheck, Clapperboard, Gift, LayoutDashboard, MessageCircle, PiggyBank, ReceiptText, ScrollText, Ticket, TrendingUp, UserCheck, Users, Wallet } from "lucide-react";
 import { api } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,12 +14,22 @@ const AdminDashboard = () => {
   const [systemStatus, setSystemStatus] = useState<any>(null);
   const [usdRatePkr, setUsdRatePkr] = useState("");
   const [savingRate, setSavingRate] = useState(false);
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [savingWhatsapp, setSavingWhatsapp] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     api("/api/accounts/admin/dashboard/").then(setStatsData).catch(() => setStatsData(null));
     api("/api/accounts/admin/system-status/").then(setSystemStatus).catch(() => setSystemStatus(null));
-    api("/api/accounts/admin/settings/").then((settings) => setUsdRatePkr(String(settings.usdRatePkr || ""))).catch(() => setUsdRatePkr(""));
+    api("/api/accounts/admin/settings/")
+      .then((settings) => {
+        setUsdRatePkr(String(settings.usdRatePkr || ""));
+        setWhatsappNumber(String(settings.whatsappNumber || ""));
+      })
+      .catch(() => {
+        setUsdRatePkr("");
+        setWhatsappNumber("");
+      });
     api("/api/pins/admin/requests/").then((rows) => setRecentRequests(rows.filter((r: any) => r.status === "pending"))).catch(() => setRecentRequests([]));
   }, []);
 
@@ -37,6 +47,23 @@ const AdminDashboard = () => {
       toast({ title: "Error", description: error?.message || "Failed to save USD rate.", variant: "destructive" });
     } finally {
       setSavingRate(false);
+    }
+  };
+
+  const saveWhatsappNumber = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSavingWhatsapp(true);
+    try {
+      const settings = await api("/api/accounts/admin/settings/", {
+        method: "POST",
+        body: JSON.stringify({ whatsappNumber }),
+      });
+      setWhatsappNumber(String(settings.whatsappNumber || ""));
+      toast({ title: "Contact Number Saved", description: "The WhatsApp number shown to users was updated." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error?.message || "Failed to save the contact number.", variant: "destructive" });
+    } finally {
+      setSavingWhatsapp(false);
     }
   };
 
@@ -161,6 +188,32 @@ const AdminDashboard = () => {
               </div>
               <Button type="submit" disabled={savingRate}>
                 {savingRate ? "Saving..." : "Save Rate"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card className="nexo-card-glow border-border/50">
+          <CardContent className="pt-6">
+            <form onSubmit={saveWhatsappNumber} className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px_auto] md:items-end">
+              <div>
+                <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-primary" />
+                  Contact / WhatsApp Number
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">Shown to users on the login page and dashboard for support contact.</p>
+              </div>
+              <div className="space-y-2">
+                <Label>WhatsApp Number</Label>
+                <Input
+                  type="tel"
+                  value={whatsappNumber}
+                  onChange={(event) => setWhatsappNumber(event.target.value)}
+                  placeholder="923448252109"
+                />
+              </div>
+              <Button type="submit" disabled={savingWhatsapp}>
+                {savingWhatsapp ? "Saving..." : "Save Number"}
               </Button>
             </form>
           </CardContent>
