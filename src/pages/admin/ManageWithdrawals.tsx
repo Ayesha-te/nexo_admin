@@ -441,7 +441,7 @@ const ManageWithdrawals = () => {
 
         <Card className="border-secondary/30 bg-secondary/5">
           <CardContent className="pt-6 space-y-2 text-sm">
-            <p className="text-foreground">System earnings follow the binary set plan: first matched set PKR 400, sets 2 to 99 PKR 200, set 100 onward PKR 100.</p>
+            <p className="text-foreground">System earnings follow the binary set plan: first matched set PKR 200, sets 2 to 99 PKR 100, set 100 onward PKR 100 (set 100 onward is subject to a 50% admin adjustment at withdrawal, per the approved business rule).</p>
             <p className="text-foreground">Requested amount is the system-generated withdrawal amount.</p>
             <p className="text-foreground">Left and right teams are used to count matched binary sets for each account.</p>
             <p className="text-foreground">Admin adjustment lets you add or deduct the final payout without changing the system wallet logic.</p>
