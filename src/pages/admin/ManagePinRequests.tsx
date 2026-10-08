@@ -60,7 +60,7 @@ const defaultSettings: PinSettings = {
   purchaseEnabled: true,
   availableAgainTime: "",
   disabledMessage: "PIN/Token Purchase is temporarily unavailable. Please try again later.",
-  pinPrice: 1000,
+  pinPrice: 600,
   minQuantity: 1,
   maxQuantity: 1000,
   paymentDetails: {
