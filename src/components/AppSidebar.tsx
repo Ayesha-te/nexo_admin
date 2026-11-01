@@ -29,6 +29,7 @@ import {
   CalendarCheck,
   Trophy,
   Bell,
+  Gift,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -50,6 +51,7 @@ const adminMenuItems = [
   { title: "Reset Password", url: "/admin/reset-password", icon: Lock },
   { title: "Manage Users", url: "/admin/users", icon: UserPlus },
   { title: "Manage Withdrawals", url: "/admin/withdrawals", icon: Wallet },
+  { title: "Reward History", url: "/admin/reward-history", icon: Gift },
   { title: "Complaints & Feedback", url: "/admin/complaints", icon: MessageSquare },
   { title: "Ads Settings", url: "/admin/ads-settings", icon: MonitorPlay },
   { title: "Today's Attendance", url: "/admin/attendance/today", icon: CalendarCheck },

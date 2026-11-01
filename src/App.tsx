@@ -11,6 +11,7 @@ import PinBalances from "@/pages/admin/PinBalances";
 import ResetUserPassword from "@/pages/admin/ResetUserPassword";
 import ManageUsers from "@/pages/admin/ManageUsers";
 import ManageWithdrawals from "@/pages/admin/ManageWithdrawals";
+import RewardHistory from "@/pages/admin/RewardHistory";
 import ManageComplaintsAndFeedback from "@/pages/admin/ManageComplaintsAndFeedback";
 import AdsSettings from "@/pages/admin/AdsSettings";
 import TodaysAttendance from "@/pages/admin/TodaysAttendance";
@@ -41,6 +42,7 @@ const AppRoutes = () => {
       <Route path="/admin/reset-password" element={<ProtectedRoute><ResetUserPassword /></ProtectedRoute>} />
       <Route path="/admin/users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
       <Route path="/admin/withdrawals" element={<ProtectedRoute><ManageWithdrawals /></ProtectedRoute>} />
+      <Route path="/admin/reward-history" element={<ProtectedRoute><RewardHistory /></ProtectedRoute>} />
       <Route path="/admin/complaints" element={<ProtectedRoute><ManageComplaintsAndFeedback /></ProtectedRoute>} />
       <Route path="/admin/ads-settings" element={<ProtectedRoute><AdsSettings /></ProtectedRoute>} />
       <Route path="/admin/attendance/today" element={<ProtectedRoute><TodaysAttendance /></ProtectedRoute>} />

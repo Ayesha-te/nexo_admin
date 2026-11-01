@@ -246,6 +246,11 @@ const ManageUsers = () => {
                     <div className="col-span-2">
                       <p className="text-xs text-muted-foreground">Current Income</p>
                       <p className="font-mono font-semibold text-foreground">PKR {Number(user.currentIncome || 0).toLocaleString()}</p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        Regular PKR {Math.max(Number(user.currentIncome || 0) - Number(user.rewardIncome || 0), 0).toLocaleString()}
+                        {" · "}
+                        Reward PKR {Number(user.rewardIncome || 0).toLocaleString()}
+                      </p>
                     </div>
                   </div>
 
@@ -313,7 +318,14 @@ const ManageUsers = () => {
                         </div>
                       </TableCell>
                       <TableCell>{user.leftTeam}/{user.rightTeam}</TableCell>
-                      <TableCell className="font-mono text-sm">PKR {Number(user.currentIncome || 0).toLocaleString()}</TableCell>
+                      <TableCell className="font-mono text-sm">
+                        <p>PKR {Number(user.currentIncome || 0).toLocaleString()}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          Regular {Math.max(Number(user.currentIncome || 0) - Number(user.rewardIncome || 0), 0).toLocaleString()}
+                          {" · "}
+                          Reward {Number(user.rewardIncome || 0).toLocaleString()}
+                        </p>
+                      </TableCell>
                       <TableCell>
                         <Badge className={user.isActive ? "bg-primary/10 text-primary border-primary/20" : "bg-destructive/10 text-destructive border-destructive/20"}>
                           {user.isActive ? "Active" : "Inactive"}

@@ -33,6 +33,12 @@ type PinSettings = {
   availableAgainTime: string;
   disabledMessage: string;
   pinPrice: number;
+  standardPrice: number;
+  promoActive: boolean;
+  promoEnabled?: boolean;
+  promoPrice: number | null;
+  promoStartAt: string | null;
+  promoEndAt: string | null;
   minQuantity: number;
   maxQuantity: number;
   paymentDetails: {
@@ -61,6 +67,12 @@ const defaultSettings: PinSettings = {
   availableAgainTime: "",
   disabledMessage: "PIN/Token Purchase is temporarily unavailable. Please try again later.",
   pinPrice: 1000,
+  standardPrice: 1000,
+  promoActive: false,
+  promoEnabled: false,
+  promoPrice: null,
+  promoStartAt: null,
+  promoEndAt: null,
   minQuantity: 1,
   maxQuantity: 1000,
   paymentDetails: {
@@ -152,6 +164,11 @@ const ManagePinRequests = () => {
       formData.append("purchaseEnabled", String(paymentMethods.some((method) => method.active)));
       formData.append("availableAgainTime", settings.availableAgainTime || "");
       formData.append("paymentMethods", JSON.stringify(paymentMethods));
+      formData.append("standardPrice", String(settings.standardPrice));
+      formData.append("promoEnabled", String(Boolean(settings.promoEnabled)));
+      formData.append("promoPrice", settings.promoPrice != null ? String(settings.promoPrice) : "");
+      formData.append("promoStartAt", settings.promoStartAt || "");
+      formData.append("promoEndAt", settings.promoEndAt || "");
       Object.entries(qrFiles).forEach(([index, file]) => {
         if (file) formData.append(`qrCode_${index}`, file);
       });
@@ -203,6 +220,90 @@ const ManagePinRequests = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={saveSettings} className="space-y-4">
+              <div className="space-y-4 rounded-md border border-border/50 bg-muted/30 p-3">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <Label className="text-base font-semibold">Joining Fee / PIN Token Price</Label>
+                  <Badge variant={settings.promoActive ? "secondary" : "outline"}>
+                    Active price: PKR {Number(settings.pinPrice || 0).toLocaleString()}
+                    {settings.promoActive ? " (Promo)" : " (Standard)"}
+                  </Badge>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Standard Price (PKR)</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={settings.standardPrice}
+                      onChange={(event) =>
+                        setSettings((prev) => ({ ...prev, standardPrice: Number(event.target.value) || 0 }))
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-md border border-border/50 bg-background/50 p-3">
+                    <div>
+                      <Label className="text-sm font-semibold">Enable Promotional Price</Label>
+                      <p className="text-xs text-muted-foreground">Overrides the standard price while active.</p>
+                    </div>
+                    <Switch
+                      checked={Boolean(settings.promoEnabled)}
+                      onCheckedChange={(checked) => setSettings((prev) => ({ ...prev, promoEnabled: checked }))}
+                    />
+                  </div>
+                </div>
+
+                {settings.promoEnabled && (
+                  <div className="grid gap-4 lg:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label>Promo Price (PKR)</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={settings.promoPrice ?? ""}
+                        onChange={(event) =>
+                          setSettings((prev) => ({
+                            ...prev,
+                            promoPrice: event.target.value ? Number(event.target.value) : null,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Promo Start (optional)</Label>
+                      <Input
+                        type="datetime-local"
+                        value={settings.promoStartAt ? new Date(settings.promoStartAt).toISOString().slice(0, 16) : ""}
+                        onChange={(event) =>
+                          setSettings((prev) => ({
+                            ...prev,
+                            promoStartAt: event.target.value ? new Date(event.target.value).toISOString() : null,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Promo End (optional)</Label>
+                      <Input
+                        type="datetime-local"
+                        value={settings.promoEndAt ? new Date(settings.promoEndAt).toISOString().slice(0, 16) : ""}
+                        onChange={(event) =>
+                          setSettings((prev) => ({
+                            ...prev,
+                            promoEndAt: event.target.value ? new Date(event.target.value).toISOString() : null,
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Leave start/end blank for an immediate, open-ended promo. If both are set, the promo price only
+                  applies between those times and the standard price automatically applies outside that window - no
+                  manual revert needed.
+                </p>
+              </div>
+
               <div className="grid gap-4 rounded-md border border-border/50 bg-muted/30 p-3 lg:grid-cols-[minmax(0,1fr)_220px_auto] lg:items-center">
                 <div>
                   <Label className="text-sm font-semibold">Payment Method Status</Label>
