@@ -52,6 +52,7 @@ const adminMenuItems = [
   { title: "Manage Users", url: "/admin/users", icon: UserPlus },
   { title: "Manage Withdrawals", url: "/admin/withdrawals", icon: Wallet },
   { title: "Reward History", url: "/admin/reward-history", icon: Gift },
+  { title: "Leader Board", url: "/admin/leader-board", icon: Trophy },
   { title: "Complaints & Feedback", url: "/admin/complaints", icon: MessageSquare },
   { title: "Ads Settings", url: "/admin/ads-settings", icon: MonitorPlay },
   { title: "Today's Attendance", url: "/admin/attendance/today", icon: CalendarCheck },
